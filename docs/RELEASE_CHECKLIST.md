@@ -9,7 +9,9 @@
 4. Complete `docs/MANUAL_VALIDATION.md` on Debian 12/Xfce/mpv and run live-source
    checks only when network requests are intended.
 5. Confirm version consistency in `VERSION`, `acmanga/__init__.py`, reader help,
-   installer output, screenshots and release documentation.
+   installer output and release documentation. If screenshots intentionally carry
+   over an unchanged prior UI, document that explicitly in README instead of
+   silently presenting them as newly captured.
 6. Build with `python3 tools/build_release.py`; do not hand-edit `SHA256SUMS`.
    Extract the produced ZIP and verify it again from the extracted copy.
 7. Confirm the release contains no state/settings/history/progress, caches, logs,

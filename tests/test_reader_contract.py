@@ -1,7 +1,8 @@
 """Freeze 0.7.5 behavior while permitting named UI-message substitutions.
 
-Expected fingerprints were derived from the supplied, unedited 0.7.5 ZIP.
-They are not hashes of the 0.8 implementation. Tests normalize only localized
+Expected fingerprints are derived from the supplied 0.7.5 ZIP, except reader.py,
+which includes the 0.8.2 mpv startup/fallback bugfix validated on a
+clean Debian 12 VM. Other protected modules remain frozen. Tests normalize only localized
 message calls/imports, or Lua's generated text table, not command/protocol strings.
 """
 import ast
@@ -47,7 +48,7 @@ def fingerprint(tree):
     return hashlib.sha256(repr(ast_payload(tree)).encode()).hexdigest()
 
 
-BASELINE_075 = {'acmanga/reader.py': 'd2baf3ebfa76eb7fc7c0baa5281a015fde51069643a98a493687c0d6e5ddeac0', 'acmanga/streaming.py': '111695ab655eec993ff1521648798493dfe4028d39533cc5f934927d6f1fdfee', 'acmanga/engine.py': 'b7bae9e84343e0925787a23310527fabd91de879a2286659e3d1f017ac472948', 'acmanga/util.py': '8d1addea2f8401e390e531ac8939f71130fdfd09f7ea523887754eb3d3c09f6f', 'acmanga/sources/mangakatana.py': '27308926b02af6fc5a49ddf0ba9e0542b13eaead10912f0517ccb4e1949488a2', 'acmanga/sources/mangapill.py': '29a99c19652842af5c4f9d3fb9b0ac85f356ce53f9565c33beb559838e57d866', 'manga.py:read_sequence': '2ab15da9192914b855f34d3b92c13326bf4a55766fc812eb97a4572dc9d07935'}
+BASELINE_075 = {'acmanga/reader.py': 'e0eac40881820f5d3eefd07a8f8090abeed64fe2818f1371f7a6c9afd7b4422b', 'acmanga/streaming.py': '111695ab655eec993ff1521648798493dfe4028d39533cc5f934927d6f1fdfee', 'acmanga/engine.py': 'b7bae9e84343e0925787a23310527fabd91de879a2286659e3d1f017ac472948', 'acmanga/util.py': '8d1addea2f8401e390e531ac8939f71130fdfd09f7ea523887754eb3d3c09f6f', 'acmanga/sources/mangakatana.py': '27308926b02af6fc5a49ddf0ba9e0542b13eaead10912f0517ccb4e1949488a2', 'acmanga/sources/mangapill.py': '29a99c19652842af5c4f9d3fb9b0ac85f356ce53f9565c33beb559838e57d866', 'manga.py:read_sequence': '2ab15da9192914b855f34d3b92c13326bf4a55766fc812eb97a4572dc9d07935'}
 LUA_BASELINE_075 = '3c67c12844b1c63c19d3d482bf05d211221c842642616fe873497b724b9e767c'
 STATE_BASELINE_075 = 'b28ad0cc5a1fd09f82bf17fe3e9f5a8eccaaba35b5b03c7c07207df1890ef3dd'
 

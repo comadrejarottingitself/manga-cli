@@ -45,6 +45,7 @@ docs/RELEASE_CHECKLIST.md
 docs/REQUIREMENTS_0.7.5.md
 docs/REQUIREMENTS_0.8.0.md
 docs/REQUIREMENTS_0.8.1.md
+docs/REQUIREMENTS_0.8.2.md
 docs/screenshots/appearance-blue.png
 docs/screenshots/main-blue.png
 install.sh

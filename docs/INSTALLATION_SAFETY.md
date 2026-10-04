@@ -1,9 +1,8 @@
 # Installation, recovery and publication safety
 
-This document describes the hardened packaging of 0.8.1. The application entry
-point, every `acmanga` module, the Lua reader and the English catalogue retain the
-accepted 0.8.1 bytes. The changes are confined to setup, release tooling, tests,
-CI and documentation.
+This document describes the hardened packaging used by 0.8.2. The 0.8.1 safety
+model is retained; 0.8.2 adds a narrowly scoped reader-startup fallback fix and a
+managed Bash PATH block for the per-user launcher.
 
 ## Supported environment and permissions
 
@@ -24,6 +23,12 @@ HOME and XDG data paths must be absolute and nonempty, without control character
 Symlinked managed paths, overlapping data/code locations and unrelated commands or
 desktop entries are refused rather than overwritten. A separately named unrelated
 `manga` command or link is preserved.
+
+On the supported default Bash setup, a successful install may add one marked block
+to `~/.bashrc`. It only adds `~/.local/bin` while the managed `manga-cli` launcher
+exists. The edit is atomic, refuses unsafe/foreign-owned startup files, and
+`uninstall.sh` removes only the exact block it created. Other shell content is not
+used as an installation target.
 
 ## What happens before the installed code changes
 

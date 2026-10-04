@@ -6,7 +6,9 @@ them. Keep the 0.7.5 package and the installer's private rollback path.
 
 ## Interface and settings
 
-1. Install without sudo. Check `manga-cli --version` and `manga --version`.
+1. Install without sudo. On a clean default-Bash target, open a **new terminal**
+   and check `command -v manga-cli`, `manga-cli --version` and `manga --version`.
+   `command -v manga-cli` should resolve to `~/.local/bin/manga-cli`.
 2. Open Search, Saved, History, Settings, Reader options, Sources, Information and
    About. Check English text, unchanged retro layout and no redundant language row.
 3. Open Settings -> Appearance. Preview all ten colors. Check titles, borders,
@@ -21,7 +23,8 @@ them. Keep the 0.7.5 package and the installer's private rollback path.
 ## Reader regression
 
 1. Open maximized in the Xfce work area. Verify gpu preference/x11 fallback on the
-   target as applicable. `F` changes Page/Width, not window size; F11 is separate.
+   target as applicable. If `gpu` dies during startup, confirm the log shows an
+   automatic retry with `x11`. `F` changes Page/Width, not window size; F11 is separate.
 2. Check left/right click and wheel direction in Page mode.
 3. In Width, check scroll, top/bottom transitions, backward entry at the bottom,
    short images, held keys and wheel inertia. Toggle automatic edge turns off/on.

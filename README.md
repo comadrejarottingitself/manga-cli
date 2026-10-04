@@ -3,7 +3,7 @@
 **A lightweight, retro terminal manga reader for Linux.**  
 *a comadreja project* — inspired by [ani-cli](https://github.com/pystardust/ani-cli).
 
-Current release: **0.8.1**. The reader keeps the stable Page/Width navigation,
+Current release: **0.8.2**. The reader keeps the stable Page/Width navigation,
 source fallback and saved-progress behavior established before the public release,
 while the interface and documentation are English-first and configurable.
 
@@ -13,7 +13,7 @@ while the interface and documentation are English-first and configurable.
 
 ![Appearance picker with the Blue accent](docs/screenshots/appearance-blue.png)
 
-The screenshots are generated from the real 0.8.1 terminal renderers with synthetic,
+The screenshots show the unchanged 0.8.1/0.8.2 terminal interface with synthetic,
 empty reading data. They contain no personal state or provider account information.
 
 ## Requirements
@@ -60,7 +60,11 @@ Existing `state.json` and `settings.json` are left byte-for-byte unchanged durin
 installation. The public command is `manga-cli`; the legacy `manga` alias is kept
 when that command name is free.
 
-If `~/.local/bin` is not in `PATH`, start it with:
+On the supported Debian 12/Xfce setup, the installer also adds one marked block to
+`~/.bashrc` when Bash is the login shell so new terminal windows can find
+`~/.local/bin/manga-cli`. The block is removed by `uninstall.sh` and unrelated
+shell configuration is left intact. If another shell is used or the startup file
+cannot be updated safely, start MANGA-CLI with:
 
 ```sh
 ~/.local/bin/manga-cli

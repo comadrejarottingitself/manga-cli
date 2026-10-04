@@ -39,14 +39,14 @@ class InstallerTests(unittest.TestCase):
         result=self.run_install();self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         launcher=self.home/'.local/bin/manga-cli';self.assertTrue(os.access(launcher,os.X_OK))
         check=subprocess.run([str(launcher),'--version'],env=self.env,text=True,stdout=subprocess.PIPE)
-        self.assertEqual(check.stdout.strip(),'0.8.1')
+        self.assertEqual(check.stdout.strip(),'0.8.2')
         self.assertTrue((self.home/'.local/share/applications/manga-cli.desktop').is_file())
 
     def test_upgrade_preserves_private_data_byte_for_byte(self):
         app,data=self.seed();before={p.name:p.read_bytes() for p in data.iterdir()}
         result=self.run_install();self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual({p.name:p.read_bytes() for p in data.iterdir()},before)
-        self.assertEqual((app/'VERSION').read_text().strip(),'0.8.1')
+        self.assertEqual((app/'VERSION').read_text().strip(),'0.8.2')
         backup=self.backups()[-1]
         self.assertEqual((backup/'app/VERSION').read_text(),'0.6.3')
         self.assertEqual((backup/'data/state.json').read_bytes(),before['state.json'])
@@ -57,7 +57,36 @@ class InstallerTests(unittest.TestCase):
         legacy=self.home/'.local/bin/manga'
         self.assertIn('manga-cli managed launcher',legacy.read_text())
         run=subprocess.run([str(legacy),'--version'],env=self.env,text=True,stdout=subprocess.PIPE)
-        self.assertEqual(run.stdout.strip(),'0.8.1')
+        self.assertEqual(run.stdout.strip(),'0.8.2')
+
+    def test_install_adds_managed_bash_path_block_and_new_terminal_finds_command(self):
+        self.env['SHELL']='/bin/bash'
+        bashrc=self.home/'.bashrc';bashrc.write_text('# existing user config\n')
+        result=self.run_install();self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        text=bashrc.read_text()
+        self.assertIn('# existing user config',text)
+        self.assertIn('# >>> manga-cli PATH >>>',text)
+        self.assertEqual(text.count('# >>> manga-cli PATH >>>'),1)
+        probe=subprocess.run(['/bin/bash','--noprofile','--rcfile',str(bashrc),'-ic','command -v manga-cli'],
+                             env=self.env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=10)
+        self.assertEqual(probe.returncode,0,probe.stderr)
+        self.assertEqual(probe.stdout.strip(),str(self.home/'.local/bin/manga-cli'))
+
+    def test_reinstall_does_not_duplicate_bash_path_block(self):
+        self.env['SHELL']='/bin/bash'
+        for _ in range(2):
+            result=self.run_install();self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        text=(self.home/'.bashrc').read_text()
+        self.assertEqual(text.count('# >>> manga-cli PATH >>>'),1)
+
+    def test_uninstall_removes_only_managed_bash_path_block(self):
+        self.env['SHELL']='/bin/bash'
+        bashrc=self.home/'.bashrc';bashrc.write_text('# keep me\n')
+        result=self.run_install();self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        result=subprocess.run(['/bin/sh',str(ROOT/'uninstall.sh')],env=self.env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertIn('# keep me',bashrc.read_text())
+        self.assertNotIn('# >>> manga-cli PATH >>>',bashrc.read_text())
 
     def test_unrelated_manga_command_not_overwritten(self):
         legacy=self.home/'.local/bin/manga';legacy.parent.mkdir(parents=True);legacy.write_text('# unrelated program\n')

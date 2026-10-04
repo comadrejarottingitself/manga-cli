@@ -1,4 +1,4 @@
-MANGA-CLI 0.8.1 - Debian 12 / Xfce target
+MANGA-CLI 0.8.2 - Debian 12 / Xfce target
 
 Target: Python 3.11, mpv 0.35, X11 desktop and a UTF-8 terminal.
 Extract the complete release ZIP and run bash install.sh as your normal user.
@@ -8,17 +8,19 @@ If Python, mpv or the certificate bundle is missing, install.sh can install the 
 using sudo for that package-manager step only, then continues the per-user install.
 Set MANGA_CLI_SKIP_SYSTEM_DEPS=1 to disable automatic package installation.
 
-Start: manga-cli
+On the default Bash setup, install.sh adds a marked ~/.bashrc block so a new terminal can run:
+  manga-cli
+The block is removed by uninstall.sh. Other shells can use ~/.local/bin/manga-cli.
+
 Version: manga-cli --version
 Offline checks: manga-cli --self-test
 Local diagnostics: manga-cli --doctor
 Live-source check (network requests): manga-cli --network-test
 
-Settings -> Appearance selects the accent; Settings -> Reader retains the
-Page/Width options. F is not fullscreen; F11 is the separate fullscreen control.
-Read README.md and VALIDATION.md for behavior, privacy and test limitations.
+The reader prefers vo=gpu. If mpv creates IPC and then dies during delayed GPU initialization,
+0.8.2 rejects that startup and automatically retries vo=x11.
 
 Close the reader before setup. After an interrupted installation:
   bash install.sh --recover
 No network or mpv is required for recovery. Never remove pending recovery files.
-See docs/INSTALLATION_SAFETY.md for filesystem requirements and test limits.
+See README.md, VALIDATION.md and docs/INSTALLATION_SAFETY.md.

@@ -190,6 +190,20 @@ def wait_for_ipc(sock_path, process, timeout=5.0):
     return os.path.exists(sock_path)
 
 
+def wait_for_reader_stable(process, timeout=0.75):
+    """Require mpv to stay alive briefly after IPC/control startup.
+
+    A video output may create the IPC socket and Lua control file before its
+    graphics context is fully initialized. If mpv then exits, consider that VO
+    failed so the next candidate (normally x11) is tried automatically.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            return False
+        time.sleep(0.05)
+    return process.poll() is None
+
 
 def mpv_command(mpv_path, playlist, input_conf, reader_script, ipc_path, video_output="gpu"):
     supported = _mpv_supported_options(mpv_path)
@@ -287,7 +301,8 @@ class ReaderSession:
                 deadline = time.monotonic() + 3
                 while not self.control.exists() and self.process.poll() is None and time.monotonic() < deadline:
                     time.sleep(0.03)
-                if self.control.exists() and self.process.poll() is None:
+                if (self.control.exists() and self.process.poll() is None
+                        and wait_for_reader_stable(self.process)):
                     self.video_output = video_output
                     self.log_handle.write(tr('reader.manga_cli_reader_ready_with_vo').format(video_output))
                     self.log_handle.flush()

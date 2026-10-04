@@ -1,7 +1,22 @@
 # Changelog
 
+## 0.8.2 - Debian 12 clean-install fixes
+
+- Fix the real mpv fallback path discovered in a clean Debian 12/Xfce VM: if
+  `vo=gpu` creates IPC/Lua state but then dies while initializing graphics, the
+  startup is rejected and MANGA-CLI automatically retries `vo=x11`.
+- Keep `vo=gpu` as the preferred output; reader navigation, Page/Width behavior,
+  chapter flow, state and provider logic are otherwise unchanged.
+- Make the `manga-cli` command available in new default-Bash terminals by adding a
+  small marked `~/.bashrc` block after a successful install; uninstall removes
+  only that exact managed block.
+- Preserve the full-path fallback (`~/.local/bin/manga-cli`) for other shells or
+  shell startup files that cannot be updated safely.
+- Add regression tests for delayed VO failure and Bash PATH setup.
+
 ## 0.8.1 - Final presentation polish
 
+- Fix mpv startup fallback so a delayed `vo=gpu` graphics failure automatically retries with `vo=x11`.
 - Simplify the home header from `ONLINE READING · MK + MP` to `ONLINE READING`.
 - Remove the redundant visible `C Continue` hint while retaining the shortcut for compatibility.
 - Add `Tutorial / guide: README.md` to the About screen.

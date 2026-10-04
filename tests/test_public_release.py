@@ -1,4 +1,4 @@
-"""Public-repository release guards for 0.8.1."""
+"""Public-repository release guards for 0.8.2."""
 from pathlib import Path
 import os
 import subprocess
@@ -93,6 +93,12 @@ class PublicReleaseTests(unittest.TestCase):
             self.assertIn("install -y python3 mpv", calls)
             self.assertTrue((home / ".local/bin/manga-cli").is_file())
 
+
+    def test_default_bash_terminals_get_user_local_command_path(self):
+        text = (ROOT / 'tools/_transaction.py').read_text(encoding='utf-8')
+        self.assertIn('# >>> manga-cli PATH >>>', text)
+        self.assertIn('$HOME/.local/bin/manga-cli', text)
+        self.assertIn('export PATH="$HOME/.local/bin:$PATH"', text)
 
     def test_publication_polish_does_not_change_reader_source_contracts(self):
         self.assertTrue((ROOT / "acmanga/reader.py").is_file())

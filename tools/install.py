@@ -126,14 +126,19 @@ def main():
                 tx.cleanup(entries, paths)
             if stage.exists():
                 shutil.rmtree(stage)
-        print(tr('setup.manga_cli_0_8_1_installed_saved_manga_and_settings_were_not_modified'))
+        path_status = tx.ensure_bash_path(paths)
+        print(tr('setup.manga_cli_installed_saved_manga_and_settings_were_not_modified'))
         print(tr('setup.command') + str(paths.launcher))
         if legacy_managed:
             print(tr('setup.the_manga_command_remains_as_a_compatibility_alias'))
         print(tr('setup.private_backup') + str(backup))
         print(tr('setup.to_restore_the_previous_code_while_keeping_your_current_progress'))
         print('  python3 ' + shlex.quote(str(backup/'restore.py')))
-        if str(paths.launcher.parent) not in os.environ.get('PATH', '').split(os.pathsep):
+        if path_status == 'added':
+            print(tr('setup.bash_path_configured'))
+        elif str(paths.launcher.parent) not in os.environ.get('PATH', '').split(os.pathsep):
+            if path_status == 'unsafe':
+                print(tr('setup.bash_path_not_changed'))
             print(tr('setup.open_a_new_terminal_or_run') + str(paths.launcher))
 
 

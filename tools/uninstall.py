@@ -33,6 +33,7 @@ def main():
         finally:
             if not paths.journal.exists():
                 tx.cleanup(entries, paths)
+        tx.remove_bash_path(paths)
         print(tr('setup.manga_cli_uninstalled_saved_manga_settings_cache_and_backups_were_preser'))
 
 

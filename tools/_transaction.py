@@ -416,3 +416,95 @@ def transact(paths: Paths, entries: list[dict]):
             raise RuntimeError('Recovery is still pending. Keep all backup/staging files and rerun install.sh --recover. ' + str(error)) from error
         raise
     recover(paths)  # Committed transaction: remove only its old, verified objects.
+
+BASH_PATH_BEGIN = '# >>> manga-cli PATH >>>'
+BASH_PATH_END = '# <<< manga-cli PATH <<<'
+BASH_PATH_BLOCK = (
+    BASH_PATH_BEGIN + "\n"
+    'if [ -x "$HOME/.local/bin/manga-cli" ]; then\n'
+    '    case ":$PATH:" in\n'
+    '        *":$HOME/.local/bin:"*) ;;\n'
+    '        *) export PATH="$HOME/.local/bin:$PATH" ;;\n'
+    '    esac\n'
+    'fi\n'
+    + BASH_PATH_END + "\n"
+)
+
+
+def _safe_user_text_file(path: Path):
+    no_links(path)
+    if not path.exists():
+        return None
+    info = path.stat()
+    if not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid() or info.st_nlink != 1:
+        raise RuntimeError('Unsafe or foreign-owned shell startup file: ' + str(path))
+    return info
+
+
+def _atomic_user_text(path: Path, text: str, mode: int):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    no_links(path)
+    fd, name = tempfile.mkstemp(prefix='.manga-cli-shell-', dir=path.parent)
+    temp = Path(name)
+    try:
+        os.fchmod(fd, mode)
+        with os.fdopen(fd, 'w', encoding='utf-8') as out:
+            out.write(text)
+            out.flush()
+            os.fsync(out.fileno())
+        no_links(path)
+        os.replace(temp, path)
+        sync_dir(path.parent)
+    finally:
+        temp.unlink(missing_ok=True)
+
+
+def ensure_bash_path(paths: Paths):
+    """Make the installed command visible in new default-Bash terminals.
+
+    Debian/Xfce terminals start interactive non-login Bash, which may not read
+    ~/.profile. Add one marked, app-specific block to ~/.bashrc only when Bash is
+    the user's login shell. Existing unrelated shell configuration is preserved.
+    """
+    shell = os.environ.get('SHELL', '')
+    if not shell:
+        try:
+            import pwd
+            shell = pwd.getpwuid(os.geteuid()).pw_shell
+        except (KeyError, ImportError):
+            shell = ''
+    if Path(shell).name != 'bash':
+        return 'not-bash'
+    path = paths.home/'.bashrc'
+    try:
+        info = _safe_user_text_file(path)
+        old = path.read_text(encoding='utf-8') if info else ''
+        if BASH_PATH_BEGIN in old or BASH_PATH_END in old:
+            return 'present' if BASH_PATH_BLOCK in old else 'unsafe'
+        sep = '' if not old or old.endswith('\n') else '\n'
+        prefix = '' if not old else '\n'
+        _atomic_user_text(path, old + sep + prefix + BASH_PATH_BLOCK,
+                          stat.S_IMODE(info.st_mode) if info else 0o644)
+        return 'added'
+    except (OSError, UnicodeError, RuntimeError):
+        return 'unsafe'
+
+
+def remove_bash_path(paths: Paths):
+    """Remove only the exact block previously written by ensure_bash_path()."""
+    path = paths.home/'.bashrc'
+    try:
+        info = _safe_user_text_file(path)
+        if not info:
+            return False
+        old = path.read_text(encoding='utf-8')
+        if BASH_PATH_BLOCK not in old:
+            return False
+        new = old.replace(BASH_PATH_BLOCK, '', 1)
+        # Undo the one blank separator inserted before the managed block.
+        if new.endswith('\n\n'):
+            new = new[:-1]
+        _atomic_user_text(path, new, stat.S_IMODE(info.st_mode))
+        return True
+    except (OSError, UnicodeError, RuntimeError):
+        return False

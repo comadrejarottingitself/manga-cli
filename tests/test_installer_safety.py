@@ -72,7 +72,7 @@ class InstallerSafetyTests(unittest.TestCase):
         result = self.run_tool(backup/'restore.py')
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(sentinel.read_text(), 'KEEP')
-        self.assertEqual((app/'VERSION').read_text().strip(), '0.8.1')
+        self.assertEqual((app/'VERSION').read_text().strip(), '0.8.2')
 
     def test_destructive_restore_data_flag_is_rejected(self):
         _, data = self.f.seed()
@@ -90,7 +90,7 @@ class InstallerSafetyTests(unittest.TestCase):
         result = subprocess.run([str(home/'.local/bin/manga-cli'), '--version'], env=self.f.env,
                                 capture_output=True, text=True, timeout=15)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.strip(), '0.8.1')
+        self.assertEqual(result.stdout.strip(), '0.8.2')
         undo = self.run_tool(self.f.backups()[-1]/'restore.py')
         self.assertEqual(undo.returncode, 0, undo.stderr)
 
@@ -217,7 +217,7 @@ install.main()
                     result = subprocess.run([sys.executable, '-B', str(ROOT/'tools/install.py'), '--recover'],
                                             env=f.env, capture_output=True, text=True, timeout=30)
                     self.assertEqual(result.returncode, 0, result.stderr)
-                    self.assertEqual((app/'VERSION').read_text().strip(), '0.8.1' if phase == 'committed' else '0.6.3')
+                    self.assertEqual((app/'VERSION').read_text().strip(), '0.8.2' if phase == 'committed' else '0.6.3')
                     self.assertEqual({p.name:p.read_bytes() for p in data.iterdir()}, before)
                 finally:
                     f.tearDown()

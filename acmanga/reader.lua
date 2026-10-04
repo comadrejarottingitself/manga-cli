@@ -1,4 +1,4 @@
--- manga-cli 0.8.1 / mpv >= 0.35.1. No external Lua modules.
+-- manga-cli 0.8.2 / mpv >= 0.35.1. No external Lua modules.
 local mp = require 'mp'
 local utils = require 'mp.utils'
 -- BEGIN GENERATED TEXT
@@ -18,7 +18,7 @@ local L = {
     pan = "A/D: horizontal | R/0: reset | TAB: status",
     quit = "T: retry download | Q/Esc: save and exit",
     space = "SPACE: down one screen (with overlap)",
-    title = "MANGA-CLI 0.8.1 / a comadreja project",
+    title = "MANGA-CLI 0.8.2 / a comadreja project",
     width = "WIDTH",
     width_wheel = "WIDTH: wheel, up/down arrows, W/S = scroll",
 }

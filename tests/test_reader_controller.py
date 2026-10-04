@@ -83,6 +83,21 @@ class ReaderControllerTests(unittest.TestCase):
         with mock.patch.object(reader, '_mpv_video_outputs', return_value={'x11'}):
             self.assertEqual(reader._mpv_output_candidates('/usr/bin/mpv'), ['x11'])
 
+    def test_reader_stability_rejects_vo_that_dies_after_ipc_startup(self):
+        class DyingProcess:
+            def __init__(self):
+                self.calls = 0
+            def poll(self):
+                self.calls += 1
+                return None if self.calls == 1 else 1
+        self.assertFalse(reader.wait_for_reader_stable(DyingProcess(), timeout=0.01))
+
+    def test_reader_stability_accepts_live_vo(self):
+        class LiveProcess:
+            def poll(self):
+                return None
+        self.assertTrue(reader.wait_for_reader_stable(LiveProcess(), timeout=0.01))
+
 
     def run_view(self,start,actions,state=None,preferences=None):
         with tempfile.TemporaryDirectory() as tmp:

@@ -4,15 +4,19 @@ TEXT = {'setup.an_unrelated_manga_cli_command_already_exists_refusing_to_overwri
                                                                                  'command already '
                                                                                  'exists; refusing '
                                                                                  'to overwrite it',
+ 'setup.bash_path_configured': 'Bash PATH configured for manga-cli. Open a new terminal, or run: '
+                               'source ~/.bashrc',
+ 'setup.bash_path_not_changed': 'Could not safely update Bash PATH. Use the full command path or '
+                                'add ~/.local/bin to PATH manually.',
  'setup.code_and_data_restored_from_the_backup': 'Code and data restored from the backup.',
  'setup.command': 'Command: ',
  'setup.do_not_use_sudo': 'Do not use sudo',
  'setup.integrity_check_failed': 'Integrity check failed: ',
  'setup.invalid_path_in_sha256sums': 'Invalid path in SHA256SUMS',
- 'setup.manga_cli_0_8_1_installed_saved_manga_and_settings_were_not_modified': 'manga-cli 0.8.1 '
-                                                                               'installed. Saved '
-                                                                               'manga and settings '
-                                                                               'were not modified.',
+ 'setup.manga_cli_installed_saved_manga_and_settings_were_not_modified': 'manga-cli 0.8.2 '
+                                                                         'installed. Saved manga '
+                                                                         'and settings were not '
+                                                                         'modified.',
  'setup.manga_cli_uninstalled_saved_manga_settings_cache_and_backups_were_preser': 'manga-cli '
                                                                                    'uninstalled; '
                                                                                    'saved manga, '

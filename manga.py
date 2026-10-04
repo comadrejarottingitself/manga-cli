@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from acmanga.i18n import tr
-# manga-cli 0.8.1 - a comadreja project / inspired by ani-cli.
+# manga-cli 0.8.2 - a comadreja project / inspired by ani-cli.
 
 import argparse
 import hashlib
@@ -35,8 +35,8 @@ DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", str(HOME / ".local" / "share")))
 CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME", str(HOME / ".cache"))) / "anticomadreja-manga"
 STATE_FILE = DATA_DIR / "state.json"
 SETTINGS_FILE = DATA_DIR / "settings.json"
-READER_LUA_SHA256 = "2bedd8d3153a6ccbc30104f2066b95395ed0aa214b194dcc340016b1cc056350"
-READER_SHA256 = "d45d9662c772ae5e4f8397caf9089f8d0f8d5313fbc6d569a7d97f8f9c9e8a2d"
+READER_LUA_SHA256 = "49e2c04b3bbb6f51b2e1ecca16db2866cc1813615b3d6c220266d94a01bb710b"
+READER_SHA256 = "cff792ec5853ea769fa7268359862ef8995eecbc551c99e13d77b938ea057b0a"
 
 
 def ensure_dirs():
@@ -1452,7 +1452,7 @@ def doctor():
         vo_detail = tr('app.preferred_available').format(
             " > ".join(candidates), ", ".join(sorted(outputs.intersection({"gpu", "gpu-next", "xv", "x11"}))) or tr('app.none'))
     checks.append((tr('app.reader_video'), vo_ok, vo_detail))
-    checks.append((tr('app.reader_integrity'), reader_integrity_ok(), tr('app.reader_py_reader_lua_0_8_1')))
+    checks.append((tr('app.reader_integrity'), reader_integrity_ok(), tr('app.reader_py_reader_lua_release')))
     checks.append((tr('app.state'), os.access(str(DATA_DIR), os.W_OK), str(DATA_DIR)))
     state = load_state(STATE_FILE)
     checks.append((tr('app.state_schema'), state.get("schema") == 6, "schema {}".format(state.get("schema"))))
@@ -1480,7 +1480,7 @@ def self_test():
     def check(name, condition):
         tests.append((name, bool(condition)))
 
-    check("version", VERSION == "0.8.1")
+    check("version", VERSION == "0.8.2")
     check(tr('app.reader_integrity'), reader_integrity_ok())
     check(tr('app.normalizer'), normalize_title("One-Piéce!") == "one piece")
     check(tr('app.alias_separators'), titles_equivalent("HIMA-TEN!", "Himaten!"))

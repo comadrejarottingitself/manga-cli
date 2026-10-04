@@ -1,12 +1,16 @@
 # Roadmap
 
-## Current release: 0.8.1
+## Current release: 0.8.2
 
 Public-release baseline: English UI/documentation, ten accent colors, safe
 single-line information frames, automatic/manual source selection, MangaKatana /
 MangaPill fallback, reproducible release packaging, CI and privacy guardrails.
 
-The 0.8.1 publication pass also keeps dependency setup straightforward on Debian:
+The 0.8.2 patch keeps the 0.8.1 interface and reader controls, while fixing two
+issues found in a clean Debian 12/Xfce VM: delayed `vo=gpu` failure now falls back
+to `vo=x11`, and new Bash terminals receive the per-user `~/.local/bin` path.
+
+The publication tooling also keeps dependency setup straightforward on Debian:
 `install.sh` can install missing `python3`/`mpv` apt packages before performing the
 per-user transactional application install.
 
