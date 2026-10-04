@@ -1,0 +1,21 @@
+MANGA-CLI 0.8.1 / a comadreja project
+
+Python runtime: standard library only. Python is not bundled.
+Reader dependency: mpv, installed separately; not bundled in this ZIP.
+Tests: the Lua harness uses the host liblua 5.4; liblua is not bundled.
+
+MangaKatana and MangaPill are external, unaffiliated services. Their content is
+not included in this package. Adapters use ordinary HTTP requests; the project
+contains no embedded browser, authentication bypass or challenge bypass.
+External sites may change their HTML, endpoints or terms independently.
+Users are responsible for respecting applicable terms and content rights.
+
+The project was inspired by ani-cli:
+https://github.com/pystardust/ani-cli
+This release builds on the supplied AntiComadreja/manga-cli code, not a newly
+copied ani-cli implementation. Project source is released under the MIT License; see LICENSE.
+
+Terminal-width implementation references:
+https://docs.python.org/3.11/library/unicodedata.html
+https://www.unicode.org/reports/tr11/
+No third-party width tables or font files are bundled.

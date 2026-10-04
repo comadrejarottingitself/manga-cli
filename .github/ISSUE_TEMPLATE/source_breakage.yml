@@ -1,0 +1,46 @@
+name: Source breakage
+description: Report MangaKatana or MangaPill parser/network breakage
+title: "[Source] "
+labels: ["source"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        External sites can change without notice. Do not post account data, cookies, tokens, private browsing information or unredacted logs.
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source
+      options:
+        - MangaKatana
+        - MangaPill
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: MANGA-CLI version
+      placeholder: "0.8.1"
+    validations:
+      required: true
+  - type: textarea
+    id: symptom
+    attributes:
+      label: What failed?
+      description: Search, chapter list, page loading, fallback, or another source action.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostic output
+      description: Optional output from `manga-cli --network-test` or `manga-cli --source-check "Example Title"`.
+      render: shell
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed personal paths, reading history, tokens, cookies and other private data.
+          required: true

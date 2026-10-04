@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install test system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mpv liblua5.4-0
+
+      - name: Check shell syntax
+        run: sh -n install.sh uninstall.sh
+
+      - name: Check generated text
+        run: python3 tools/sync_text.py --check
+
+      - name: Check privacy guardrails
+        run: python3 tools/privacy_check.py --git-index
+
+      - name: Run test suite
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3 -m unittest discover -v
+
+      - name: Run application self-test
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python3 manga.py --self-test
+
+      - name: Verify release manifest
+        run: python3 tools/build_release.py --check

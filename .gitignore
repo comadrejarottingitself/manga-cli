@@ -1,0 +1,70 @@
+# Python / tooling
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+coverage.xml
+htmlcov/
+.python-version
+
+# Local reading data / personal preferences
+state.json
+settings.json
+history.json
+progress.json
+control.json
+timings.json
+manifest.json
+pages.json
+pages.m3u
+input.conf
+
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+.envrc
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Runtime artifacts
+.cache/
+cache/
+caches/
+logs/
+*.log
+*.log.*
+*.part
+*.tmp
+*.bak
+*~
+backups/
+*backups*/
+ch-*/
+*.sqlite
+*.sqlite3
+
+# Archives / recovered private trees / work directories
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*Rescate*/
+*GUARDADOS*/
+.local/
+build/
+dist/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

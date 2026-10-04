@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a reproducible MANGA-CLI bug
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please remove usernames, home paths, reading history, private URLs, tokens and other personal data before posting logs.
+  - type: input
+    id: version
+    attributes:
+      label: MANGA-CLI version
+      placeholder: "0.8.1"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, desktop/session, Python version and mpv version.
+      placeholder: "Debian 12, Xfce/X11, Python 3.11, mpv 0.35"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Use synthetic or non-sensitive examples when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Optional output from `manga-cli --doctor` or other relevant commands. Remove personal paths and reading data first.
+      render: shell
