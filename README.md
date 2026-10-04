@@ -7,6 +7,9 @@ Current release: **0.8.2**. The reader keeps the stable Page/Width navigation,
 source fallback and saved-progress behavior established before the public release,
 while the interface and documentation are English-first and configurable.
 
+IMPORTANT: Currently working on compatibility with as many distros as possible.
+Already confirmed compatibility: Debian.
+
 ## Preview
 
 ![MANGA-CLI main menu with the Blue accent](docs/screenshots/main-blue.png)
