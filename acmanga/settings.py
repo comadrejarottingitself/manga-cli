@@ -57,7 +57,7 @@ def _normalized(data):
                 "show_page_indicator", "save_reader_position"):
         if isinstance(data.get(key), bool):
             base[key] = data[key]
-    for key, lo, hi, kind in [("prefetch_pages",0,8,int),("cache_mib",64,4096,int),("scroll_step",0.02,0.5,float)]:
+    for key, lo, hi, kind in [("prefetch_pages",0,10,int),("cache_mib",64,4096,int),("scroll_step",0.02,0.5,float)]:
         try:
             import math
             value = kind(data.get(key, base[key]))

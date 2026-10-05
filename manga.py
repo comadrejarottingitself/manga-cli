@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from acmanga.i18n import tr
-# manga-cli 0.8.2 - a comadreja project / inspired by ani-cli.
+# manga-cli 0.8.3 - a comadreja project / inspired by ani-cli.
 
 import argparse
 import hashlib
@@ -35,8 +35,8 @@ DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", str(HOME / ".local" / "share")))
 CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME", str(HOME / ".cache"))) / "anticomadreja-manga"
 STATE_FILE = DATA_DIR / "state.json"
 SETTINGS_FILE = DATA_DIR / "settings.json"
-READER_LUA_SHA256 = "49e2c04b3bbb6f51b2e1ecca16db2866cc1813615b3d6c220266d94a01bb710b"
-READER_SHA256 = "cff792ec5853ea769fa7268359862ef8995eecbc551c99e13d77b938ea057b0a"
+READER_LUA_SHA256 = "bf5190cc890cf94c7ecfb12318db022750a9909a5459220ae5b7266ef7e1fa5a"
+READER_SHA256 = "196e6ddb6ed25371fa6538551eaf80ffba0d6f8fee8b6055d5cb310cebbadd25"
 
 
 def ensure_dirs():
@@ -1214,7 +1214,7 @@ READER_OPTION_HELP = {
     "remember_reader_mode": tr('app.on_each_manga_remembers_its_last_mode_off_opening_a_manga_always_uses_th'),
     "save_reader_position": tr('app.on_resume_the_vertical_position_off_start_at_the_top_chapter_and_page_ar'),
     "show_page_indicator": tr('app.brief_indicator_on_page_or_mode_changes_tab_shows_it_on_demand_errors_ar'),
-    "prefetch_pages": tr('app.pages_ahead_0_1_3_or_5_zero_disables_prefetch_for_the_current_chapter'),
+    "prefetch_pages": tr('app.pages_around_current_0_1_3_5_or_10_each_direction_zero_disables_prefetch'),
     "prefetch_next_chapter": tr('app.prepare_the_next_chapter_near_the_end_chapter_navigation_still_works_whe'),
     "scroll_step": tr('app.distance_per_step_in_width_mode_space_moves_down_one_screen_with_a_small'),
 }
@@ -1280,7 +1280,7 @@ def render_options(settings, selection, flash=None):
 
 def cycle_option(settings, action, direction=1):
     choices = {"accent_color": list(ACCENT_COLORS), "reader_fit": ["width","page"], "scroll_step": [0.05,0.10,0.15,0.20],
-               "prefetch_pages": [0,1,3,5], "cache_mib": [128,256,512,1024],
+               "prefetch_pages": [0,1,3,5,10], "cache_mib": [128,256,512,1024],
                "prefetch_next_chapter": [False,True],
                "auto_page_turn": [False, True], "remember_reader_mode": [False, True],
                "show_page_indicator": [False, True], "save_reader_position": [False, True]}
@@ -1480,7 +1480,7 @@ def self_test():
     def check(name, condition):
         tests.append((name, bool(condition)))
 
-    check("version", VERSION == "0.8.2")
+    check("version", VERSION == "0.8.3")
     check(tr('app.reader_integrity'), reader_integrity_ok())
     check(tr('app.normalizer'), normalize_title("One-Piéce!") == "one piece")
     check(tr('app.alias_separators'), titles_equivalent("HIMA-TEN!", "Himaten!"))
@@ -1535,7 +1535,7 @@ def self_test():
         check(tr('app.mpv_single_session'), "--keep-open=yes" in cmd and "--idle=yes" in cmd)
         check(tr('app.mouse'), "MBTN_LEFT" in lua and "MBTN_RIGHT" in lua)
         check(tr('app.debounce'), "wheel_locked" in lua and "blocked[key]" in lua)
-        check(tr('app.independent_width'), "toggle-fit" in lua and "bind({'f','v'}" in lua)
+        check(tr('app.independent_width'), "toggle-fit" in lua and "bind({'f','F','v','V'}" in lua)
         check(tr('app.vertical_persistence'), "position=pos" in lua)
         check(tr('app.bounded_prefetch'), default_settings()["prefetch_pages"] == 3)
 
@@ -1547,10 +1547,10 @@ def self_test():
     options = default_settings()
     options["prefetch_pages"] = 0
     values = []
-    for _ in range(4):
+    for _ in range(5):
         values.append(options["prefetch_pages"])
         cycle_option(options, "prefetch_pages")
-    check(tr('app.prefetch_0_1_3_5'), values == [0, 1, 3, 5])
+    check(tr('app.prefetch_0_1_3_5_10'), values == [0, 1, 3, 5, 10])
     with __import__("tempfile").TemporaryDirectory(prefix="manga-cli-prefs-") as tmp:
         options["auto_page_turn"] = False
         options["show_page_indicator"] = False

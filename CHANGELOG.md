@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.8.3 - modern mpv compatibility and bidirectional prefetch
+
+- Support both legacy and modern mpv background syntax at runtime. Older mpv builds
+  keep `--background=#000000`; builds exposing `--background-color` use
+  `--background=color` plus `--background-color=#000000`. This fixes the reader
+  startup failure reproduced on Fedora 44/KDE/Wayland with mpv 0.41 without
+  dropping Debian 12/mpv 0.35 compatibility.
+- Make page prefetch bidirectional around the current page instead of forward-only.
+  Prefetch choices are now `0 / 1 / 3 / 5 / 10`, interpreted as the number of
+  pages prepared on each side when those pages exist. Existing saved values remain
+  valid and are not rewritten by the installer.
+- Accept uppercase `F` and `V` as Page/Width toggle keys as well as lowercase
+  `f`/`v`, so Caps Lock no longer disables the fit-mode shortcut. `F11` remains
+  the separate true-fullscreen control.
+- Add regression coverage for legacy/modern mpv command lines, symmetric prefetch
+  windows and chapter edges, the 10-page radius, and uppercase fit-mode keys.
+
 ## 0.8.2 - Debian 12 clean-install fixes
 
 - Fix the real mpv fallback path discovered in a clean Debian 12/Xfce VM: if

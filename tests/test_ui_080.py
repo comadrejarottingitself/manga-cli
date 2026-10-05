@@ -268,7 +268,7 @@ class AppearanceFlowTests(unittest.TestCase):
 class ScreenTests(unittest.TestCase):
     def test_main_menu_is_english(self):
         text = capture(app.render_main, default_state(), default_settings())
-        for word in ('MANGA-CLI', 'SEARCH', 'SAVED', 'HISTORY', 'SETTINGS', 'v0.8.2'):
+        for word in ('MANGA-CLI', 'SEARCH', 'SAVED', 'HISTORY', 'SETTINGS', 'v0.8.3'):
             self.assertIn(word, text)
         for word in ('GUARDADOS', 'OPCIONES', 'BUSCAR'):
             self.assertNotIn(word, text)

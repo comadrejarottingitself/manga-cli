@@ -45,14 +45,37 @@ class StreamTests(unittest.TestCase):
             s=self.stream(plan(30),self.root,workers=1);s.wait(18)
             self.assertEqual(calls,['https://example.test/0/18'])
 
-    def test_only_lookahead_window_is_prefetched(self):
+    def test_bidirectional_prefetch_window_is_symmetric(self):
         calls=[]
         with mock.patch('acmanga.streaming._stream_image',side_effect=writer(calls)):
             s=self.stream(plan(30),self.root,prefetch=3,workers=2);s.wait(10);s.focus(10)
             until=time.monotonic()+1
-            while len(s.ready)<4 and time.monotonic()<until:time.sleep(.01)
-            self.assertEqual(set(s.ready),{10,11,12,13})
-            self.assertEqual(len(calls),4)
+            while len(s.ready)<7 and time.monotonic()<until:time.sleep(.01)
+            self.assertEqual(set(s.ready),{7,8,9,10,11,12,13})
+            self.assertEqual(len(calls),7)
+
+    def test_prefetch_ten_keeps_ten_pages_on_each_side_when_available(self):
+        calls=[]
+        with mock.patch('acmanga.streaming._stream_image',side_effect=writer(calls)):
+            s=self.stream(plan(40),self.root,prefetch=10,workers=2);s.wait(20);s.focus(20)
+            until=time.monotonic()+2
+            while len(s.ready)<21 and time.monotonic()<until:time.sleep(.01)
+            self.assertEqual(set(s.ready),set(range(10,31)))
+            self.assertEqual(len(calls),21)
+
+    def test_bidirectional_prefetch_clamps_cleanly_at_chapter_edges(self):
+        with mock.patch('threading.Thread.start'):
+            s=self.stream(plan(12),self.root,prefetch=10,workers=2)
+        s.request(1);s.focus(1)
+        picked=[]
+        with s.cv:
+            while True:
+                index=s._next_locked()
+                if index is None:break
+                picked.append(index);s.active.add(index)
+        self.assertEqual(picked,list(range(1,12)))
+        self.assertTrue(all(1 <= i <= 12 for i in picked))
+        s.threads.clear()
 
     def test_partial_failure_keeps_successful_pages(self):
         calls=[]
@@ -163,5 +186,5 @@ class StreamTests(unittest.TestCase):
 
     def test_invalid_preferences_are_clamped(self):
         path=self.root/'settings.json';path.write_text(json.dumps({'prefetch_pages':99,'cache_mib':1,'scroll_step':float('nan')}))
-        prefs=load_settings(path);self.assertEqual(prefs['prefetch_pages'],8);self.assertEqual(prefs['cache_mib'],64)
+        prefs=load_settings(path);self.assertEqual(prefs['prefetch_pages'],10);self.assertEqual(prefs['cache_mib'],64)
         self.assertEqual(prefs['scroll_step'],.10)

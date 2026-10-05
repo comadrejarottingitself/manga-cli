@@ -174,6 +174,9 @@ class LuaReaderTests(unittest.TestCase):
     def test_f_toggles_page_and_width_without_resizing_window(self):
         self.vm.run("show(1,3000,0,'page');assert(LAST.view.fit=='page');key('f');assert(LAST.view.fit=='width');assert(not PROPS.fullscreen);key('f');assert(LAST.view.fit=='page');assert(not PROPS.fullscreen)")
 
+    def test_uppercase_fit_keys_work_with_caps_lock(self):
+        self.vm.run("show(1,3000,0,'page');key('F');assert(LAST.view.fit=='width');key('F');assert(LAST.view.fit=='page');key('V');assert(LAST.view.fit=='width');key('V');assert(LAST.view.fit=='page')")
+
     def test_f11_keeps_true_fullscreen_as_optional_control(self):
         self.vm.run("show(1,3000,0,'page');key('F11');assert(PROPS.fullscreen);key('F11');assert(not PROPS.fullscreen)")
 

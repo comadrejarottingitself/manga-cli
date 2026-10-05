@@ -1,8 +1,9 @@
 # Manual acceptance checklist
 
-Target: Debian 12, Xfce, Python 3.11.2 and mpv 0.35.1. These desktop/live checks
-remain to be run by a person on the target machine; automated mocks do not replace
-them. Keep the 0.7.5 package and the installer's private rollback path.
+Primary target: Debian 12, Xfce/X11, Python 3.11.2 and mpv 0.35.1. For 0.8.3,
+also repeat the reader checks on Fedora 44, KDE/Wayland, Python 3.14 and mpv 0.41.
+These desktop/live checks must be run by a person; automated mocks do not replace
+them. Keep the previously validated package and the installer's private rollback path.
 
 ## Interface and settings
 
@@ -24,14 +25,15 @@ them. Keep the 0.7.5 package and the installer's private rollback path.
 
 1. Open maximized in the Xfce work area. Verify gpu preference/x11 fallback on the
    target as applicable. If `gpu` dies during startup, confirm the log shows an
-   automatic retry with `x11`. `F` changes Page/Width, not window size; F11 is separate.
+   automatic retry with `x11`. Confirm both `f` and `F` (and `v`/`V`) change Page/Width with Caps Lock off/on; F11 is separate.
 2. Check left/right click and wheel direction in Page mode.
 3. In Width, check scroll, top/bottom transitions, backward entry at the bottom,
    short images, held keys and wheel inertia. Toggle automatic edge turns off/on.
 4. Cross both chapter boundaries. Close/reopen and confirm chapter, page, mode
    and vertical position. Try the remember-mode and save-position switches.
 5. Check English reader help with I/?, indicator with Tab, and retry messaging.
-6. Check prefetch 0/1/3/5, next-chapter prefetch and the wheel/arrow step settings.
+6. Check prefetch 0/1/3/5/10. At 10, rapidly move forward and backward and verify both directions stay responsive; next-chapter prefetch and wheel/arrow step must still work.
+7. On Fedora 44/mpv 0.41, confirm the reader starts without manually patching `reader.py`; inspect `reader.log` only if it fails. On Debian 12/mpv 0.35, confirm the same build still opens normally.
 
 ## Sources and rollback
 

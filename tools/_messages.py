@@ -13,7 +13,7 @@ TEXT = {'setup.an_unrelated_manga_cli_command_already_exists_refusing_to_overwri
  'setup.do_not_use_sudo': 'Do not use sudo',
  'setup.integrity_check_failed': 'Integrity check failed: ',
  'setup.invalid_path_in_sha256sums': 'Invalid path in SHA256SUMS',
- 'setup.manga_cli_installed_saved_manga_and_settings_were_not_modified': 'manga-cli 0.8.2 '
+ 'setup.manga_cli_installed_saved_manga_and_settings_were_not_modified': 'manga-cli 0.8.3 '
                                                                          'installed. Saved manga '
                                                                          'and settings were not '
                                                                          'modified.',

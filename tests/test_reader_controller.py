@@ -77,6 +77,24 @@ class ReaderControllerTests(unittest.TestCase):
                 cmd = reader.mpv_command('/usr/bin/mpv', playlist, conf, script, str(Path(tmp)/'sock'))
         self.assertIn('--geometry=100%x100%+0+0', cmd)
 
+    def test_mpv_035_uses_legacy_background_color_syntax(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            playlist, conf, script = reader.write_mpv_files(tmp, [])
+            with mock.patch.object(reader, '_mpv_supported_options', return_value={'window-maximized'}):
+                cmd = reader.mpv_command('/usr/bin/mpv', playlist, conf, script, str(Path(tmp)/'sock'))
+        self.assertIn('--background=#000000', cmd)
+        self.assertNotIn('--background=color', cmd)
+        self.assertFalse(any(part.startswith('--background-color=') for part in cmd))
+
+    def test_modern_mpv_uses_background_mode_plus_background_color(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            playlist, conf, script = reader.write_mpv_files(tmp, [])
+            with mock.patch.object(reader, '_mpv_supported_options', return_value={'window-maximized','background-color'}):
+                cmd = reader.mpv_command('/usr/bin/mpv', playlist, conf, script, str(Path(tmp)/'sock'))
+        self.assertIn('--background=color', cmd)
+        self.assertIn('--background-color=#000000', cmd)
+        self.assertNotIn('--background=#000000', cmd)
+
     def test_video_output_candidates_prefer_gpu_then_x11(self):
         with mock.patch.object(reader, '_mpv_video_outputs', return_value={'x11','gpu','xv'}):
             self.assertEqual(reader._mpv_output_candidates('/usr/bin/mpv'), ['gpu','x11'])

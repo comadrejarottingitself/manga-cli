@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-READER_HASH = "cff792ec5853ea769fa7268359862ef8995eecbc551c99e13d77b938ea057b0a"
+READER_HASH = "196e6ddb6ed25371fa6538551eaf80ffba0d6f8fee8b6055d5cb310cebbadd25"
 FROZEN_BASE = {
     "acmanga/sources/mangakatana.py": "41187fd24af65849dba7ece55036e2583136e6316530b5a9dfb0fe697c0e6d52",
 }
@@ -27,8 +27,8 @@ class PackageCleanTests(unittest.TestCase):
             digest = hashlib.sha256((ROOT / rel).read_bytes()).hexdigest()
             self.assertEqual(digest, expected, rel)
 
-    def test_version_is_082(self):
-        self.assertEqual((ROOT / "VERSION").read_text(encoding="utf-8").strip(), "0.8.2")
+    def test_version_is_083(self):
+        self.assertEqual((ROOT / "VERSION").read_text(encoding="utf-8").strip(), "0.8.3")
 
     def test_chapter_screen_has_no_redundant_c_continue_hint(self):
         text = (ROOT / "manga.py").read_text(encoding="utf-8")

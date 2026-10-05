@@ -39,14 +39,14 @@ class InstallerTests(unittest.TestCase):
         result=self.run_install();self.assertEqual(result.returncode,0,result.stdout+result.stderr)
         launcher=self.home/'.local/bin/manga-cli';self.assertTrue(os.access(launcher,os.X_OK))
         check=subprocess.run([str(launcher),'--version'],env=self.env,text=True,stdout=subprocess.PIPE)
-        self.assertEqual(check.stdout.strip(),'0.8.2')
+        self.assertEqual(check.stdout.strip(),'0.8.3')
         self.assertTrue((self.home/'.local/share/applications/manga-cli.desktop').is_file())
 
     def test_upgrade_preserves_private_data_byte_for_byte(self):
         app,data=self.seed();before={p.name:p.read_bytes() for p in data.iterdir()}
         result=self.run_install();self.assertEqual(result.returncode,0,result.stderr)
         self.assertEqual({p.name:p.read_bytes() for p in data.iterdir()},before)
-        self.assertEqual((app/'VERSION').read_text().strip(),'0.8.2')
+        self.assertEqual((app/'VERSION').read_text().strip(),'0.8.3')
         backup=self.backups()[-1]
         self.assertEqual((backup/'app/VERSION').read_text(),'0.6.3')
         self.assertEqual((backup/'data/state.json').read_bytes(),before['state.json'])
@@ -57,7 +57,7 @@ class InstallerTests(unittest.TestCase):
         legacy=self.home/'.local/bin/manga'
         self.assertIn('manga-cli managed launcher',legacy.read_text())
         run=subprocess.run([str(legacy),'--version'],env=self.env,text=True,stdout=subprocess.PIPE)
-        self.assertEqual(run.stdout.strip(),'0.8.2')
+        self.assertEqual(run.stdout.strip(),'0.8.3')
 
     def test_install_adds_managed_bash_path_block_and_new_terminal_finds_command(self):
         self.env['SHELL']='/bin/bash'

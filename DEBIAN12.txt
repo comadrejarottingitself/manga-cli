@@ -1,4 +1,4 @@
-MANGA-CLI 0.8.2 - Debian 12 / Xfce target
+MANGA-CLI 0.8.3 - Debian 12 / Xfce target
 
 Target: Python 3.11, mpv 0.35, X11 desktop and a UTF-8 terminal.
 Extract the complete release ZIP and run bash install.sh as your normal user.
@@ -18,9 +18,14 @@ Local diagnostics: manga-cli --doctor
 Live-source check (network requests): manga-cli --network-test
 
 The reader prefers vo=gpu. If mpv creates IPC and then dies during delayed GPU initialization,
-0.8.2 rejects that startup and automatically retries vo=x11.
+0.8.3 retains that startup check and automatically retries vo=x11.
 
 Close the reader before setup. After an interrupted installation:
   bash install.sh --recover
 No network or mpv is required for recovery. Never remove pending recovery files.
 See README.md, VALIDATION.md and docs/INSTALLATION_SAFETY.md.
+
+0.8.3 also keeps Debian 12/mpv 0.35 background syntax while detecting modern mpv
+builds that require --background=color plus --background-color=#000000.
+Reader prefetch can now be set to 0/1/3/5/10 pages on each side of the current page.
+Both lowercase and uppercase F/V toggle Page/Width; F11 remains fullscreen.

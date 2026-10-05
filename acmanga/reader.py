@@ -218,9 +218,17 @@ def mpv_command(mpv_path, playlist, input_conf, reader_script, ipc_path, video_o
            "--loop-playlist=no", "--osc=no", "--osd-level=1", "--osd-bar=no",
            "--osd-font-size=21", "--osd-border-size=2", "--osd-align-x=right",
            "--osd-align-y=top", "--osd-margin-x=18", "--osd-margin-y=16",
-           "--cursor-autohide=1000", "--title=manga-cli", "--background=#000000",
+           "--cursor-autohide=1000", "--title=manga-cli",
            "--input-conf={}".format(input_conf), "--script={}".format(reader_script),
            "--input-ipc-server={}".format(ipc_path)]
+    # mpv < 0.38 accepted a color directly in --background. Modern mpv
+    # uses --background to select the background mode and --background-color
+    # for the actual color. Detect the newer option instead of keying off a
+    # distro or version string so Debian 12/mpv 0.35 and modern mpv both work.
+    if 'background-color' in supported:
+        cmd.extend(['--background=color', '--background-color=#000000'])
+    else:
+        cmd.append('--background=#000000')
     if 'window-maximized' in supported:
         cmd.append('--window-maximized=yes')
     else:

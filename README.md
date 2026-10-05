@@ -3,7 +3,7 @@
 **A lightweight, retro terminal manga reader for Linux.**  
 *a comadreja project* — inspired by [ani-cli](https://github.com/pystardust/ani-cli).
 
-Current release: **0.8.2**. The reader keeps the stable Page/Width navigation,
+Current release: **0.8.3**. The reader keeps the stable Page/Width navigation,
 source fallback and saved-progress behavior established before the public release,
 while the interface and documentation are English-first and configurable.
 
@@ -16,7 +16,7 @@ Already confirmed compatibility: Debian.
 
 ![Appearance picker with the Blue accent](docs/screenshots/appearance-blue.png)
 
-The screenshots show the unchanged 0.8.1/0.8.2 terminal interface with synthetic,
+The screenshots show the unchanged 0.8.1/0.8.2/0.8.3 terminal interface with synthetic,
 empty reading data. They contain no personal state or provider account information.
 
 ## Requirements
@@ -104,7 +104,7 @@ columns inside the frame. The old English-only language row is intentionally abs
 
 | Input | Action |
 | --- | --- |
-| `F` or `V` | Toggle **Page** / **Width** (not fullscreen) |
+| `F`/`f` or `V`/`v` | Toggle **Page** / **Width** (not fullscreen; works with Caps Lock) |
 | `F11` | Toggle real fullscreen independently |
 | Left / right click | Next / previous page |
 | Page mode: wheel down / up | Next / previous page |
@@ -124,11 +124,14 @@ columns inside the frame. The old English-only language row is intentionally abs
 Going backward in Width mode opens the preceding page at its bottom. The last page
 continues into the next chapter; going backward from page one can open the previous
 chapter. Anti-bounce handling, saved page/position, maximized startup, `gpu`
-preference and `x11` fallback are retained.
+preference and `x11` fallback are retained. MANGA-CLI also selects the compatible
+black-background syntax automatically for both older mpv releases such as Debian 12
+mpv 0.35 and modern mpv releases that expose `--background-color`.
 
 **Settings -> Reader** includes automatic edge turns, default mode, per-manga mode
-memory, vertical-position saving, page indicator, 0/1/3/5-page prefetch,
-next-chapter prefetch and wheel/arrow step size.
+memory, vertical-position saving, page indicator, 0/1/3/5/10-page bidirectional prefetch,
+next-chapter prefetch and wheel/arrow step size. The value is a radius: for example,
+10 prepares up to ten pages ahead and ten behind the current page.
 
 ## Sources and diagnostics
 

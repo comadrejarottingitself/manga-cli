@@ -1,5 +1,5 @@
-MANGA-CLI 0.8.2 - a comadreja project
+MANGA-CLI 0.8.3 - a comadreja project
 
 Read README.md for installation, controls, appearance, data paths and rollback.
-0.8.2 fixes delayed mpv GPU-to-X11 fallback and clean Debian 12 Bash PATH setup.
+0.8.3 adds modern-mpv compatibility, bidirectional prefetch and Caps-Lock-safe F/V mode toggles.
 Open-source license terms are in LICENSE.

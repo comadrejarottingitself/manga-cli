@@ -1,16 +1,18 @@
 # Roadmap
 
-## Current release: 0.8.2
+## Current release: 0.8.3
 
 Public-release baseline: English UI/documentation, ten accent colors, safe
 single-line information frames, automatic/manual source selection, MangaKatana /
 MangaPill fallback, reproducible release packaging, CI and privacy guardrails.
 
-The 0.8.2 patch keeps the 0.8.1 interface and reader controls, while fixing two
-issues found in a clean Debian 12/Xfce VM: delayed `vo=gpu` failure now falls back
-to `vo=x11`, and new Bash terminals receive the per-user `~/.local/bin` path.
+The 0.8.3 patch keeps the established reader navigation and adds three narrowly
+scoped improvements discovered through real use: runtime compatibility with both
+legacy and modern mpv background options, bidirectional page prefetch with a new
+10-page-per-side choice, and uppercase `F`/`V` fit toggles for Caps Lock users.
 
-The publication tooling also keeps dependency setup straightforward on Debian:
+The 0.8.2 delayed `vo=gpu` -> `vo=x11` startup fallback and Bash PATH fix remain
+unchanged. The publication tooling also keeps dependency setup straightforward on Debian:
 `install.sh` can install missing `python3`/`mpv` apt packages before performing the
 per-user transactional application install.
 

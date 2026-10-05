@@ -110,7 +110,7 @@ class PageStream:
                 self.manifest = old
         except (OSError, ValueError, TypeError, AttributeError):
             pass
-        self.prefetch = max(0, min(8, int(prefetch)))
+        self.prefetch = max(0, min(10, int(prefetch)))
         self.cv = threading.Condition()
         self.closed = False
         self.ready = {}
@@ -199,9 +199,15 @@ class PageStream:
             if index not in self.ready and index not in self.active and index not in self.errors:
                 return index
         if self.anchor is not None:
-            for index in range(self.anchor + 1, min(self.total, self.anchor+self.prefetch) + 1):
-                if index not in self.ready and index not in self.active and index not in self.errors:
-                    return index
+            # Keep a symmetric window around the visible page. Two workers can
+            # naturally take +1/-1 together, then +2/-2, so rapid backward and
+            # forward navigation receive the same nearby-page priority. Explicit
+            # request() calls above always win over background prefetch.
+            for distance in range(1, self.prefetch + 1):
+                for index in (self.anchor + distance, self.anchor - distance):
+                    if (1 <= index <= self.total and index not in self.ready
+                            and index not in self.active and index not in self.errors):
+                        return index
         return None
 
     def _fetch(self, index):

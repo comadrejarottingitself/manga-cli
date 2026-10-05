@@ -23,7 +23,7 @@ class Install080Tests(unittest.TestCase):
         self.assertTrue(os.access(alias, os.X_OK))
         result = subprocess.run([str(alias), '--version'], env=self.fixture.env,
                                 text=True, capture_output=True, timeout=10)
-        self.assertEqual(result.stdout.strip(), '0.8.2')
+        self.assertEqual(result.stdout.strip(), '0.8.3')
 
     def test_upgrade_from_075_preserves_complete_synthetic_state_and_settings_bytes(self):
         app, data = self.fixture.seed()
@@ -43,7 +43,7 @@ class Install080Tests(unittest.TestCase):
         result = self.fixture.run_install()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual({p.name: p.read_bytes() for p in data.iterdir()}, before)
-        self.assertEqual((app / 'VERSION').read_text().strip(), '0.8.2')
+        self.assertEqual((app / 'VERSION').read_text().strip(), '0.8.3')
         self.assertEqual((self.fixture.backups()[-1] / 'app/VERSION').read_text(), '0.7.5')
 
     def test_saved_accent_survives_reinstall(self):
@@ -83,7 +83,7 @@ class Install080Tests(unittest.TestCase):
         result = self.fixture.run_install()
         self.assertEqual(result.returncode, 0, result.stderr)
         root = self.fixture.home / '.local/lib/anticomadreja-manga'
-        for rel in ('acmanga/locales/en.json', 'LICENSE', 'SECURITY.md', 'CONTRIBUTING.md', 'docs/LOCALIZATION.md'):
+        for rel in ('acmanga/locales/en.json', 'LICENSE', 'SECURITY.md', 'CONTRIBUTING.md', 'docs/LOCALIZATION.md', 'docs/REQUIREMENTS_0.8.3.md'):
             self.assertTrue((root / rel).is_file(), rel)
 
     def test_corrupt_english_catalogue_is_rejected_before_touching_old_install(self):
@@ -100,7 +100,7 @@ class Install080Tests(unittest.TestCase):
     def test_installer_and_desktop_copy_are_english(self):
         result = self.fixture.run_install()
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('manga-cli 0.8.2 installed.', result.stdout)
+        self.assertIn('manga-cli 0.8.3 installed.', result.stdout)
         self.assertIn('Private backup:', result.stdout)
         text = (self.fixture.home / '.local/share/applications/manga-cli.desktop').read_text()
         self.assertIn('terminal manga reader', text)

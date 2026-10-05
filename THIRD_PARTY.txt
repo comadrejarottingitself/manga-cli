@@ -1,4 +1,4 @@
-MANGA-CLI 0.8.2 / a comadreja project
+MANGA-CLI 0.8.3 / a comadreja project
 
 Python runtime: standard library only. Python is not bundled.
 Reader dependency: mpv, installed separately; not bundled in this ZIP.

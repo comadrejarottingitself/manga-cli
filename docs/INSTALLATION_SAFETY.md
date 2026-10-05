@@ -1,8 +1,9 @@
 # Installation, recovery and publication safety
 
-This document describes the hardened packaging used by 0.8.2. The 0.8.1 safety
-model is retained; 0.8.2 adds a narrowly scoped reader-startup fallback fix and a
-managed Bash PATH block for the per-user launcher.
+This document describes the hardened packaging retained by 0.8.3. The 0.8.1 safety
+model and the 0.8.2 reader-startup/Bash PATH fixes remain unchanged; 0.8.3 adds
+only the scoped reader compatibility, prefetch and key-binding changes described
+in the changelog. It does not redesign the installation transaction model.
 
 ## Supported environment and permissions
 

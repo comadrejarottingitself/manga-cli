@@ -1,4 +1,4 @@
-"""Public-repository release guards for 0.8.2."""
+"""Public-repository release guards for 0.8.3."""
 from pathlib import Path
 import os
 import subprocess

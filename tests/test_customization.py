@@ -58,12 +58,12 @@ class PreferenceTests(unittest.TestCase):
                 self.assertIs(s['auto_page_turn'],True)
                 self.assertIs(s['show_page_indicator'],True)
 
-    def test_all_four_prefetch_choices_are_reachable(self):
+    def test_all_five_prefetch_choices_are_reachable(self):
         s=default_settings();s['prefetch_pages']=0
         got=[]
-        for _ in range(4):
+        for _ in range(5):
             got.append(s['prefetch_pages']);app.cycle_option(s,'prefetch_pages')
-        self.assertEqual(got,[0,1,3,5])
+        self.assertEqual(got,[0,1,3,5,10])
 
     def test_all_boolean_options_toggle_both_ways(self):
         for key in ('auto_page_turn','remember_reader_mode','show_page_indicator','save_reader_position'):
@@ -76,12 +76,12 @@ class PreferenceTests(unittest.TestCase):
         app.cycle_option(s,'reader_fit');self.assertEqual(s['reader_fit'],'page')
         app.cycle_option(s,'scroll_step');self.assertEqual(s['scroll_step'],.15)
 
-    def test_prefetch_zero_queues_only_current_page(self):
-        for ahead in (0,1,3,5):
-            with self.subTest(prefetch=ahead), tempfile.TemporaryDirectory() as td:
+    def test_prefetch_choices_queue_current_then_nearest_pages_on_both_sides(self):
+        for radius in (0,1,3,5,10):
+            with self.subTest(prefetch=radius), tempfile.TemporaryDirectory() as td:
                 plan={'url_sets':[['https://example.invalid/{}.png'.format(i) for i in range(12)]], 'source_name':'Test'}
                 with mock.patch('threading.Thread.start'):
-                    s=PageStream(plan,td,prefetch=ahead)
+                    s=PageStream(plan,td,prefetch=radius)
                 s.request(3);s.focus(3)
                 picked=[]
                 with s.cv:
@@ -89,7 +89,12 @@ class PreferenceTests(unittest.TestCase):
                         index=s._next_locked()
                         if index is None:break
                         picked.append(index);s.active.add(index)
-                self.assertEqual(picked,list(range(3,4+ahead)))
+                expected=[3]
+                for distance in range(1,radius+1):
+                    for index in (3+distance,3-distance):
+                        if 1 <= index <= 12:
+                            expected.append(index)
+                self.assertEqual(picked,expected)
                 s.threads.clear();s.close()
 
 

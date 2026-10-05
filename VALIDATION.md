@@ -1,83 +1,73 @@
-# MANGA-CLI 0.8.2 - Debian 12 bug-fix validation
+# MANGA-CLI 0.8.3 - release validation
 
-Date: 2026-10-04. Scope: the two defects found during the first clean Debian 12
-installation test after the 0.8.1 public baseline: delayed mpv video-output failure
-and the per-user command PATH in Xfce/Bash.
+Date: 2026-10-05.
 
-## Diagnosis from the clean Debian 12 VM
+## Scope
 
-The VM was installed as Debian GNU/Linux 12 (bookworm) with Xfce/X11. Python was
-3.11.2. Before MANGA-CLI setup, both `mpv` and `manga-cli` were absent.
+0.8.3 intentionally changes only three reader-facing areas:
 
-After installation, search/chapter preparation reached the reader, but the mpv log
-showed that `vo=gpu` created the IPC/Lua state early enough for MANGA-CLI to mark it
-ready and then died while the virtual graphics stack was still initializing. The
-real log included DRI2 authentication failure, Vulkan/device initialization failure,
-CRTC permission errors and finally `Failed initializing any suitable GPU context!`.
+- mpv background-option compatibility: legacy mpv keeps
+  `--background=#000000`; modern mpv builds exposing `--background-color` use
+  `--background=color` plus `--background-color=#000000`;
+- page prefetch becomes bidirectional, with configurable radii
+  `0 / 1 / 3 / 5 / 10` on each side of the current page;
+- uppercase `F` and `V` are bound to the same Page/Width toggle as lowercase
+  `f` and `v`, while `F11` remains independent fullscreen.
 
-`mpv --no-config --vo=x11 --force-window=immediate --idle=yes` opened normally in
-the same VM. Temporarily preferring x11 also opened the same manga chapter, proving
-that source resolution, page download, mpv itself and the reader protocol were not
-the failing components.
+Source adapters, chapter identity/fallback, progress/state storage, historical
+paths, installer transactions/recovery and the established Page/Width navigation
+semantics are otherwise preserved.
 
-The reader fix keeps `gpu` first but requires the process to remain alive briefly
-after IPC/control startup. If it dies during that delayed initialization window,
-that VO is rejected and the existing candidate loop proceeds to `x11`. The patched
-reader then opened the chapter automatically in the same VM without the temporary
-x11-first diagnostic change.
+## Automated results
 
-A second clean-install issue was also reproduced: `~/.profile` contained Debian's
-normal `~/.local/bin` PATH stanza, but new Xfce terminal windows still inherited a
-PATH without that directory. Therefore the installed launcher worked by full path
-while bare `manga-cli` did not. 0.8.2 adds one marked, app-specific block to
-`~/.bashrc` when Bash is the login shell. It is atomic, refuses unsafe startup files,
-is not duplicated by reinstall, and uninstall removes only that exact block.
+The 0.8.3 candidate contains **429 unittest cases**. The complete suite was run in
+segments because of the execution environment's per-command time limit; all 429
+discovered cases passed. The application offline self-test reports **55/55 OK**.
+Regression coverage includes legacy/modern mpv command lines, bidirectional
+prefetch radii and chapter edges, the 10-page radius, uppercase fit-mode keys,
+installer/recovery safety, sources, HTTP, state/settings and privacy checks.
 
-## Automated acceptance checks
+The release builder/privacy/integrity gates passed, and two independent release
+builds produced byte-identical ZIP archives before the documentation-only
+publication refresh recorded below.
 
-All **424 unit/integration tests passed**, executed as a normal non-root user in
-module groups so the long failure-injection suites fit the execution limits. This
-includes the complete existing safety suites plus new regression coverage for:
+## Real Debian 12 validation
 
-- a reader process that appears ready and then dies during VO initialization;
-- a stable reader process that remains accepted;
-- `gpu` remaining preferred ahead of `x11`;
-- creation of the marked Bash PATH block;
-- a fresh Bash process resolving `manga-cli` through that block;
-- reinstall not duplicating the block; and
-- uninstall preserving unrelated `.bashrc` content while removing its own block.
+The 0.8.3 application/reader code was physically installed and tested on the
+maintainer's real Debian 12 + Xfce/X11 machine with Python 3.11.2 and mpv 0.35.1.
+The tested candidate passed:
 
-The application offline self-test passes **55/55**. The privacy scanner passes,
-generated English/Lua/bootstrap messages are synchronized, `install.sh` and
-`uninstall.sh` pass shell syntax checking, and all Python sources parse with the
-Python 3.11 grammar.
+- verified ZIP checksum and normal-user upgrade installation;
+- `manga-cli --version` -> `0.8.3`;
+- offline self-test -> **55/55 OK**;
+- local doctor -> **13/13 OK**;
+- end-to-end network test -> **2/2 OK** for MangaKatana and MangaPill;
+- live `--source-check "Berserk"` on both providers;
+- real chapter reading with Page/Width navigation;
+- bidirectional **Prefetch = 10**, including rapid forward/backward navigation;
+- uppercase `F` Page/Width switching with Caps Lock behavior fixed.
 
-## Preserved behavior and data
+The publication refresh preserves those tested application/reader bytes. Only
+release documentation was updated to retain the latest public compatibility note
+and record this validation result; the manifest and ZIP were then rebuilt.
 
-0.8.2 does not redesign Page/Width navigation, mouse/wheel controls, chapter flow,
-prefetch, source identity/fallback, progress, settings or historical data paths.
-The protected reader/source/state contracts remain covered. Installation and
-rollback tests continue to verify that saved manga, progress and settings are not
-installation rollback targets.
+## Fedora 44 / modern mpv evidence
 
-`vo=gpu` remains the preferred renderer. `vo=x11` is used only when appropriate as
-the compatibility fallback. No global mpv configuration is created or modified.
+Before 0.8.3 was built, public 0.8.2 was tested on Fedora 44 with KDE/Wayland,
+Python 3.14.6 and mpv 0.41.0. Installation and offline checks worked, but mpv
+rejected the legacy `--background=#000000` argument. Applying the exact
+compatibility behavior now implemented in 0.8.3 (`--background=color` plus
+`--background-color=#000000`) made the real reader work normally, including
+Page/Width operation.
 
-## Release status and remaining manual gate
+This is strong diagnostic validation of the 0.8.3 compatibility fix, but the final
+unmodified 0.8.3 release archive has not yet been independently rerun on that Fedora
+machine. A clean Debian 12 VM rerun of 0.8.3 is also still useful additional
+coverage. Debian 12 + Xfce/X11 remains the primary tested target.
 
-The mpv fallback correction has been manually confirmed in the clean Debian 12/Xfce
-VM. The Bash PATH correction has automated fresh-shell coverage but must still be
-reinstalled once in that same VM from the final 0.8.2 candidate and checked with:
+## Publication status
 
-```sh
-command -v manga-cli
-manga-cli --version
-```
-
-A final chapter should then be opened again without source edits to reconfirm the
-complete installed path: clean Debian 12 -> install -> new terminal -> `manga-cli`
--> chapter -> automatic gpu/x11 selection.
-
-Do not publish 0.8.2 as final until that last candidate-install check and the
-GitHub-hosted CI run pass. See `docs/MANUAL_VALIDATION.md` and
-`docs/INSTALLATION_SAFETY.md`.
+0.8.3 is published as a narrowly scoped compatibility/performance update for the
+existing Debian 12 target. Additional distro reports are welcome. Future validation
+should keep testing clean Debian installations and modern-mpv Wayland systems so
+compatibility claims remain evidence-based.
