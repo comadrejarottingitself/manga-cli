@@ -10,6 +10,29 @@ while the interface and documentation are English-first and configurable.
 IMPORTANT: Currently working on compatibility with as many distros as possible.
 Already confirmed compatibility: Debian.
 
+
+## Android beta
+
+An experimental Android / Termux build is now available in the
+[`android-v0.8.3`](https://github.com/comadrejarottingitself/manga-cli/tree/android-v0.8.3)
+branch and is tagged as `v0.8.3-android`.
+
+It runs on native Termux through **Termux:X11 + mpv-x** and uses a dedicated
+mobile reader with large touch zones, double-tap zoom, smooth panning,
+Saved manga, History and full reading-progress / Continue support.
+
+The Android build has passed the project test suite on both Termux and Debian
+and has also been physically tested on a real Android device. It is still
+labelled beta because Android devices, vendor ROMs and Termux:X11
+configurations can vary.
+
+Desktop `v0.8.3` remains the stable release on `main`. The plan for
+**v0.9.0** is to reunify the desktop and Android profiles under one installer
+with automatic platform detection.
+
+See the Android branch README for the complete installation guide.
+
+
 ## Preview
 
 ![MANGA-CLI main menu with the Blue accent](docs/screenshots/main-blue.png)
