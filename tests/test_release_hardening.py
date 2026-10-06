@@ -153,7 +153,12 @@ class ReleaseSafetyTests(unittest.TestCase):
         self.assertEqual(self.privacy_result()[0], 1)
 
     def test_hardlinked_payload_is_rejected(self):
-        os.link(self.root/'README.md', self.base/'hardlink')
+        if not hasattr(os, "link"):
+            self.skipTest("hard links are unavailable on this platform")
+        try:
+            os.link(self.root/'README.md', self.base/'hardlink')
+        except OSError as exc:
+            self.skipTest("filesystem cannot create hard links here: {}".format(exc))
         with self.assertRaises(ValueError):
             release.read_payload(self.root)
 

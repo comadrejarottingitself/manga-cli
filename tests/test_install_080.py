@@ -10,6 +10,9 @@ from tests import test_installer
 ROOT = Path(__file__).resolve().parents[1]
 
 
+IS_NATIVE_TERMUX = bool(os.environ.get("TERMUX_VERSION")) or str(os.environ.get("PREFIX") or "").startswith("/data/data/com.termux/")
+
+@unittest.skipIf(IS_NATIVE_TERMUX, "Debian installer tests are not applicable to native Termux")
 class Install080Tests(unittest.TestCase):
     def setUp(self):
         self.fixture = test_installer.InstallerTests(methodName='runTest')

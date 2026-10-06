@@ -13,6 +13,9 @@ from tests import test_installer as fixtures
 ROOT = Path(__file__).resolve().parents[1]
 
 
+IS_NATIVE_TERMUX = bool(os.environ.get("TERMUX_VERSION")) or str(os.environ.get("PREFIX") or "").startswith("/data/data/com.termux/")
+
+@unittest.skipIf(IS_NATIVE_TERMUX, "Debian installer tests are not applicable to native Termux")
 class InstallerSafetyTests(unittest.TestCase):
     def setUp(self):
         self.f = fixtures.InstallerTests('runTest'); self.f.setUp(); self.addCleanup(self.f.tearDown)

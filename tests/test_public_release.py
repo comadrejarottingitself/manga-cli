@@ -9,6 +9,8 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+IS_NATIVE_TERMUX = bool(os.environ.get("TERMUX_VERSION")) or str(os.environ.get("PREFIX") or "").startswith("/data/data/com.termux/")
+
 class PublicReleaseTests(unittest.TestCase):
     def test_public_repository_metadata_exists(self):
         for rel in (
@@ -33,6 +35,7 @@ class PublicReleaseTests(unittest.TestCase):
         self.assertIn("MANGA_CLI_SKIP_SYSTEM_DEPS", text)
         self.assertNotIn("pip install", text)
 
+    @unittest.skipIf(IS_NATIVE_TERMUX, "Debian dependency-bootstrap runtime test is not applicable to native Termux")
     def test_dependency_bootstrap_can_be_disabled_safely(self):
         with tempfile.TemporaryDirectory() as td:
             fakebin = Path(td) / "bin"
@@ -53,6 +56,7 @@ class PublicReleaseTests(unittest.TestCase):
             self.assertIn("missing system dependencies", result.stderr)
             self.assertIn("mpv", result.stderr)
 
+    @unittest.skipIf(IS_NATIVE_TERMUX, "Debian dependency-bootstrap runtime test is not applicable to native Termux")
     def test_dependency_bootstrap_installs_all_missing_runtime_packages_on_apt_system(self):
         with tempfile.TemporaryDirectory() as td:
             base = Path(td)

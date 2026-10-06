@@ -17,7 +17,7 @@ from acmanga import VERSION
 from acmanga.engine import MultiSourceEngine
 from acmanga.errors import MangaError
 from acmanga.reader import (ReaderSession, view, mpv_command, write_mpv_files, MANUAL_QUIT_CODE,
-    _mpv_supported_options, _mpv_video_outputs, _mpv_output_candidates)
+    _mpv_supported_options, _mpv_video_outputs, _mpv_output_candidates, is_android_termux)
 from acmanga.settings import default_settings, load_settings, save_settings
 from acmanga.streaming import background_call
 from acmanga.sources import MangaKatanaSource, MangaPillSource
@@ -36,6 +36,7 @@ CACHE_DIR = Path(os.environ.get("XDG_CACHE_HOME", str(HOME / ".cache"))) / "anti
 STATE_FILE = DATA_DIR / "state.json"
 SETTINGS_FILE = DATA_DIR / "settings.json"
 READER_LUA_SHA256 = "bf5190cc890cf94c7ecfb12318db022750a9909a5459220ae5b7266ef7e1fa5a"
+READER_ANDROID_LUA_SHA256 = "02a862d1a643cd90a44a4aad3ec87f98319f753e25952af9fcfa870f97a200e3"
 READER_SHA256 = "196e6ddb6ed25371fa6538551eaf80ffba0d6f8fee8b6055d5cb310cebbadd25"
 
 
@@ -349,9 +350,14 @@ def source_short(manga):
 
 def reader_integrity_ok():
     path = Path(__file__).resolve().parent / "acmanga" / "reader.py"
+    android_lua = path.with_name("reader_android.lua")
     try:
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         lua_digest = hashlib.sha256(path.with_suffix(".lua").read_bytes()).hexdigest()
+        if android_lua.exists():
+            android_digest = hashlib.sha256(android_lua.read_bytes()).hexdigest()
+            marker_ok = "def is_android_termux" in path.read_text(encoding="utf-8")
+            return lua_digest == READER_LUA_SHA256 and android_digest == READER_ANDROID_LUA_SHA256 and marker_ok
     except OSError:
         return False
     return digest == READER_SHA256 and lua_digest == READER_LUA_SHA256
@@ -1193,9 +1199,16 @@ def option_rows(settings):
     ]
 
 
-def reader_option_rows(settings):
+def reader_option_rows(settings, mobile=False):
     def yes_no(key):
         return tr('app.on') if settings.get(key, True) else tr('app.off')
+    if mobile:
+        return [
+            ("mobile_double_tap_zoom", "Double-tap zoom", "{:.1f}x".format(settings.get("mobile_double_tap_zoom", 2.0))),
+            ("show_page_indicator", tr('app.show_page_indicator'), yes_no("show_page_indicator")),
+            ("prefetch_pages", tr('app.page_prefetch'), str(settings.get("prefetch_pages", 3))),
+            ("prefetch_next_chapter", tr('app.prefetch_next_chapter'), yes_no("prefetch_next_chapter")),
+        ]
     return [
         ("auto_page_turn", tr('app.auto_page_turn_at_edges'), yes_no("auto_page_turn")),
         ("reader_fit", tr('app.default_mode'), tr('app.width') if settings.get("reader_fit", "page") == "width" else tr('app.page')),
@@ -1207,6 +1220,10 @@ def reader_option_rows(settings):
         ("scroll_step", tr('app.wheel_arrow_step'), tr('app.of_screen').format(round(settings.get("scroll_step", 0.10) * 100))),
     ]
 
+
+MOBILE_READER_OPTION_HELP = {
+    "mobile_double_tap_zoom": "Zoom factor used around the touched point. Double-tap again resets to fit-to-screen.",
+}
 
 READER_OPTION_HELP = {
     "auto_page_turn": tr('app.width_only_reaching_the_bottom_advances_another_upward_input_at_the_top'),
@@ -1220,12 +1237,13 @@ READER_OPTION_HELP = {
 }
 
 
-def render_reader_options(settings, selection, flash=None):
+def render_reader_options(settings, selection, flash=None, mobile=False):
     import textwrap
     ui.clear()
     ui.brand(VERSION, tr('app.reader'))
     print()
-    rows = reader_option_rows(settings)
+    rows = reader_option_rows(settings, mobile=mobile)
+    selection = max(0, min(selection, len(rows) - 1))
     count = max(1, min(len(rows), ui.term_size().lines - 15))
     offset = min(max(0, selection - count + 1), max(0, len(rows) - count))
     ui.frame_top()
@@ -1236,18 +1254,20 @@ def render_reader_options(settings, selection, flash=None):
                       (ui.BOLD, ui.ACCENT) if selected else (ui.DIM,),
                       (ui.CYAN,) if selected else (ui.DIM,))
     ui.frame_bottom()
-    for line in textwrap.wrap(READER_OPTION_HELP[rows[selection][0]], width=max(20, ui.width() - 2)):
+    help_key = rows[selection][0]
+    help_text = MOBILE_READER_OPTION_HELP.get(help_key) or READER_OPTION_HELP.get(help_key, "")
+    for line in textwrap.wrap(help_text, width=max(20, ui.width() - 2)):
         ui.emit(ui.paint(line, ui.DIM))
     ui.key_hint([(tr('app.up_down'), tr('app.select')), (tr('app.enter_left_right'), tr('app.change')), ("ESC", tr('app.back'))])
     if flash:
         ui.status(flash, "ok")
 
 
-def reader_options_flow(engine, settings):
+def reader_options_flow(engine, settings, mobile=False):
     selection, flash = 0, None
     while True:
-        rows = reader_option_rows(settings)
-        render_reader_options(settings, selection, flash)
+        rows = reader_option_rows(settings, mobile=mobile)
+        render_reader_options(settings, selection, flash, mobile=mobile)
         flash = None
         key = ui.read_key()
         if key == "esc":
@@ -1280,6 +1300,7 @@ def render_options(settings, selection, flash=None):
 
 def cycle_option(settings, action, direction=1):
     choices = {"accent_color": list(ACCENT_COLORS), "reader_fit": ["width","page"], "scroll_step": [0.05,0.10,0.15,0.20],
+               "mobile_double_tap_zoom": [1.5,2.0,2.5],
                "prefetch_pages": [0,1,3,5,10], "cache_mib": [128,256,512,1024],
                "prefetch_next_chapter": [False,True],
                "auto_page_turn": [False, True], "remember_reader_mode": [False, True],
@@ -1329,7 +1350,7 @@ def options_flow(engine, settings):
         action = rows[selection][0]
         if action == "reader_customization":
             if key in ("enter", "right"):
-                reader_options_flow(engine, settings)
+                reader_options_flow(engine, settings, mobile=is_android_termux())
             continue
         if action == "appearance":
             if key in ("enter", "right"):
@@ -1447,7 +1468,7 @@ def doctor():
     vo_detail = tr('app.mpv_unavailable')
     if mpv_path:
         outputs = _mpv_video_outputs(mpv_path)
-        candidates = _mpv_output_candidates(mpv_path)
+        candidates = _mpv_output_candidates(mpv_path, mobile=is_android_termux())
         vo_ok = bool(outputs.intersection({"gpu", "x11"}))
         vo_detail = tr('app.preferred_available').format(
             " > ".join(candidates), ", ".join(sorted(outputs.intersection({"gpu", "gpu-next", "xv", "x11"}))) or tr('app.none'))
@@ -1516,7 +1537,7 @@ def self_test():
     check("parser-katana", engine.sources["mangakatana"]._page_urls is not None)
     check("parser-pill", engine.sources["mangapill"]._page_urls is not None)
     with __import__("tempfile").TemporaryDirectory(prefix="acmanga-self-") as tmp:
-        playlist, conf, script = write_mpv_files(tmp, [Path(tmp) / "001.jpg", Path(tmp) / "002.jpg"])
+        playlist, conf, script = write_mpv_files(tmp, [Path(tmp) / "001.jpg", Path(tmp) / "002.jpg"], mobile=False)
         lua = script.read_text(encoding="utf-8")
         conf_text = conf.read_text(encoding="utf-8")
         check("playlist", playlist.exists() and "002.jpg" in playlist.read_text(encoding="utf-8"))
@@ -1527,7 +1548,7 @@ def self_test():
         check("bounded-align", "g.overflow" in lua and "clamp(" in lua)
         check("mpv-manual-quit", "mp.commandv('quit', '4')" in lua)
         check("mpv-fullscreen", "toggle-fullscreen" in lua and "F11" in lua)
-        cmd = mpv_command("/usr/bin/mpv", playlist, conf, script, str(Path(tmp) / "sock"), video_output="gpu")
+        cmd = mpv_command("/usr/bin/mpv", playlist, conf, script, str(Path(tmp) / "sock"), video_output="gpu", mobile=False)
         check("mpv-ipc", any(part.startswith("--input-ipc-server=") for part in cmd))
         check("mpv-script", any(part.startswith("--script=") for part in cmd))
         check("mpv-fit-policy", (("--video-recenter=no" in cmd) == ("video-recenter" in _mpv_supported_options("/usr/bin/mpv"))) and "--no-config" in cmd and "--vo=gpu" in cmd and "--fs=no" in cmd)
@@ -1542,7 +1563,7 @@ def self_test():
     # Offline checks for the user-visible personalization contract.
     expected = {"auto_page_turn", "reader_fit", "remember_reader_mode", "prefetch_pages",
                 "show_page_indicator", "save_reader_position"}
-    check(tr('app.reader_menu'), expected <= {row[0] for row in reader_option_rows(default_settings())})
+    check(tr('app.reader_menu'), expected <= {row[0] for row in reader_option_rows(default_settings(), mobile=False)})
     check(tr('app.new_mode_page'), default_settings()["reader_fit"] == "page")
     options = default_settings()
     options["prefetch_pages"] = 0

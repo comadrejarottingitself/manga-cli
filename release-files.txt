@@ -26,6 +26,7 @@ acmanga/i18n.py
 acmanga/locales/en.json
 acmanga/reader.lua
 acmanga/reader.py
+acmanga/reader_android.lua
 acmanga/settings.py
 acmanga/sources/__init__.py
 acmanga/sources/base.py
@@ -37,6 +38,8 @@ acmanga/terminal_text.py
 acmanga/theme.py
 acmanga/ui.py
 acmanga/util.py
+docs/ANDROID_READER_DESIGN.md
+docs/ANDROID_TERMUX.md
 docs/ARCHITECTURE.md
 docs/INSTALLATION_SAFETY.md
 docs/LOCALIZATION.md
@@ -52,7 +55,14 @@ docs/screenshots/main-blue.png
 install.sh
 manga.py
 release-files.txt
+termux-install.sh
+termux-uninstall.sh
 tests/__init__.py
+tests/test_android_gesture_model.py
+tests/test_android_installer.py
+tests/test_android_lua_runtime.py
+tests/test_android_lua_syntax.py
+tests/test_android_profile.py
 tests/test_customization.py
 tests/test_downloads.py
 tests/test_engine.py

@@ -19,6 +19,13 @@ CACHE_CHAPTER_LIMIT = 2
 MANUAL_QUIT_CODE = 4
 
 
+def is_android_termux(env=None):
+    """Return True only for native Termux, never ordinary desktop Linux."""
+    env = os.environ if env is None else env
+    prefix = str(env.get('PREFIX') or '')
+    return bool(env.get('TERMUX_VERSION')) or prefix.startswith('/data/data/com.termux/')
+
+
 def cache_key(chapter):
     return "{}-{}".format(chapter.get("source") or "source", chapter.get("id") or "chapter")
 
@@ -66,18 +73,19 @@ def prepare_chapter(engine, chapter, cache_dir, progress_callback=None):
     return pages
 
 
-def _lua_reader_script():
-    return Path(__file__).with_name("reader.lua").read_text(encoding="utf-8")
+def _lua_reader_script(mobile=False):
+    name = "reader_android.lua" if mobile else "reader.lua"
+    return Path(__file__).with_name(name).read_text(encoding="utf-8")
 
 
-def write_mpv_files(work_dir, pages):
+def write_mpv_files(work_dir, pages, mobile=False):
     work_dir = Path(work_dir)
     playlist = work_dir / "pages.m3u"
     input_conf = work_dir / "input.conf"
     script = work_dir / "acmanga_reader.lua"
     playlist.write_text("".join(str(Path(p).resolve()) + "\n" for p in pages), encoding="utf-8")
     input_conf.write_text("# manga-cli: input is owned by acmanga_reader.lua\n", encoding="utf-8")
-    script.write_text(_lua_reader_script(), encoding="utf-8")
+    script.write_text(_lua_reader_script(mobile=mobile), encoding="utf-8")
     return playlist, input_conf, script
 
 
@@ -134,8 +142,10 @@ def _mpv_video_outputs(mpv_path):
     return outputs
 
 
-def _mpv_output_candidates(mpv_path):
-    """Prefer the GPU renderer and retain X11 as a compatibility fallback."""
+def _mpv_output_candidates(mpv_path, mobile=False):
+    """Use the proven X11 path on mobile; keep desktop GPU -> X11 fallback."""
+    if mobile:
+        return ["x11"]
     outputs = _mpv_video_outputs(mpv_path)
     candidates = [name for name in ("gpu", "x11") if name in outputs]
     # Some test doubles or unusual builds may not report --vo=help correctly.
@@ -205,40 +215,48 @@ def wait_for_reader_stable(process, timeout=0.75):
     return process.poll() is None
 
 
-def mpv_command(mpv_path, playlist, input_conf, reader_script, ipc_path, video_output="gpu"):
+def mpv_command(mpv_path, playlist, input_conf, reader_script, ipc_path, video_output="gpu", mobile=False):
     supported = _mpv_supported_options(mpv_path)
-    # Normal Xfce window, maximized so the canvas occupies the whole work area.
-    # F controls image fit; it does not resize the window.
-    cmd = [mpv_path, "--no-config", "--vo={}".format(video_output), "--fs=no",
-           "--border=yes",
+    if mobile:
+        # The tested Termux:X11 stack renders correctly through x11 while GPU/EGL
+        # may fall back to software or fail context creation entirely.
+        video_output = "x11"
+    cmd = [mpv_path, "--no-config", "--vo={}".format(video_output),
+           "--fs={}".format("yes" if mobile else "no"),
+           "--border={}".format("no" if mobile else "yes"),
            "--no-audio", "--keepaspect=yes", "--keepaspect-window=no",
            "--idle=yes", "--force-window=immediate", "--keep-open=yes",
            "--input-default-bindings=no", "--input-terminal=no",
-           "--input-doubleclick-time=0", "--image-display-duration=inf",
-           "--loop-playlist=no", "--osc=no", "--osd-level=1", "--osd-bar=no",
-           "--osd-font-size=21", "--osd-border-size=2", "--osd-align-x=right",
-           "--osd-align-y=top", "--osd-margin-x=18", "--osd-margin-y=16",
-           "--cursor-autohide=1000", "--title=manga-cli",
+           "--input-doubleclick-time={}".format(280 if mobile else 0),
+           "--image-display-duration=inf", "--loop-playlist=no", "--osc=no",
+           "--osd-level=1", "--osd-bar=no", "--osd-font-size=21",
+           "--osd-border-size=2", "--osd-align-x=right", "--osd-align-y=top",
+           "--osd-margin-x=18", "--osd-margin-y=16",
+           "--cursor-autohide={}".format(250 if mobile else 1000),
+           "--title={}".format("manga-cli Android" if mobile else "manga-cli"),
            "--input-conf={}".format(input_conf), "--script={}".format(reader_script),
            "--input-ipc-server={}".format(ipc_path)]
-    # mpv < 0.38 accepted a color directly in --background. Modern mpv
-    # uses --background to select the background mode and --background-color
-    # for the actual color. Detect the newer option instead of keying off a
-    # distro or version string so Debian 12/mpv 0.35 and modern mpv both work.
     if 'background-color' in supported:
         cmd.extend(['--background=color', '--background-color=#000000'])
     else:
         cmd.append('--background=#000000')
-    if 'window-maximized' in supported:
+    if mobile:
+        # Termux:X11 normally has no desktop window manager. Explicit geometry
+        # avoids the force-window + auto-resize sizing bug reproduced on-device.
+        cmd.append('--geometry=100%x100%+0+0')
+        cmd.extend(['--video-unscaled=no', '--panscan=0'])
+        if 'input-builtin-dragging' in supported:
+            cmd.append('--input-builtin-dragging=no')
+        if 'input-touch-emulate-mouse' in supported:
+            cmd.append('--input-touch-emulate-mouse=yes')
+    elif 'window-maximized' in supported:
         cmd.append('--window-maximized=yes')
     else:
-        # Compatibility fallback: still occupy the complete desktop area.
         cmd.append('--geometry=100%x100%+0+0')
-    # Keep a stable window size when newer mpv builds expose this flag.
     if 'auto-window-resize' in supported:
         cmd.append('--auto-window-resize=no')
     if 'video-recenter' in supported:
-        cmd.append('--video-recenter=no')
+        cmd.append('--video-recenter={}'.format('yes' if mobile else 'no'))
     return cmd
 
 
@@ -287,14 +305,15 @@ class ReaderSession:
                 pass
         self.log_handle = log.open('w', encoding='utf-8')
         self.temp = tempfile.TemporaryDirectory(prefix='manga-cli-')
-        playlist, conf, script = write_mpv_files(self.temp.name, [])
+        mobile = is_android_termux()
+        playlist, conf, script = write_mpv_files(self.temp.name, [], mobile=mobile)
         self.ipc = str(Path(self.temp.name) / 'mpv.sock')
         self.control = Path(self.temp.name) / 'control.json'
         env = os.environ.copy()
         env['ACMANGA_READER_STATE'] = str(self.control)
 
         failures = []
-        for video_output in _mpv_output_candidates(mpv):
+        for video_output in _mpv_output_candidates(mpv, mobile=mobile):
             for path in (Path(self.ipc), self.control, Path(str(self.control) + '.tmp')):
                 try:
                     path.unlink()
@@ -303,7 +322,7 @@ class ReaderSession:
             self.log_handle.write(tr('reader.manga_cli_starting_reader_with_vo').format(video_output))
             self.log_handle.flush()
             self.process = subprocess.Popen(
-                mpv_command(mpv, playlist, conf, script, self.ipc, video_output=video_output),
+                mpv_command(mpv, playlist, conf, script, self.ipc, video_output=video_output, mobile=mobile),
                 stdin=subprocess.DEVNULL, stdout=self.log_handle, stderr=subprocess.STDOUT, env=env)
             if wait_for_ipc(self.ipc, self.process):
                 deadline = time.monotonic() + 3
@@ -438,7 +457,8 @@ class ReaderSession:
                    'chapter_key': chapter_key(chapter), 'label': tr('reader.ch').format(chapter.get('number') or '?'),
                    'view': view, 'scroll_step': self.preferences['scroll_step'], 'overlap': 0.12,
                    'auto_page_turn': self.preferences['auto_page_turn'],
-                   'show_page_indicator': self.preferences['show_page_indicator']}
+                   'show_page_indicator': self.preferences['show_page_indicator'],
+                   'mobile_double_tap_zoom': self.preferences.get('mobile_double_tap_zoom', 2.0)}
         self.send('show-page', json.dumps(payload, ensure_ascii=False))
 
     def close(self):

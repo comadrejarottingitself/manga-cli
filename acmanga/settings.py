@@ -29,6 +29,7 @@ def default_settings():
         "prefetch_next_chapter": True,
         "cache_mib": 512,
         "scroll_step": 0.10,
+        "mobile_double_tap_zoom": 2.0,
     }
 
 
@@ -57,7 +58,7 @@ def _normalized(data):
                 "show_page_indicator", "save_reader_position"):
         if isinstance(data.get(key), bool):
             base[key] = data[key]
-    for key, lo, hi, kind in [("prefetch_pages",0,10,int),("cache_mib",64,4096,int),("scroll_step",0.02,0.5,float)]:
+    for key, lo, hi, kind in [("prefetch_pages",0,10,int),("cache_mib",64,4096,int),("scroll_step",0.02,0.5,float),("mobile_double_tap_zoom",1.25,3.0,float)]:
         try:
             import math
             value = kind(data.get(key, base[key]))
